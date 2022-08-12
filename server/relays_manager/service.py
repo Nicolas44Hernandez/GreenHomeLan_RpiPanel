@@ -1,4 +1,4 @@
-# import smbus
+import smbus
 import logging
 from typing import Iterable
 from flask import Flask
@@ -15,7 +15,7 @@ relays_status_timeloop = Timeloop()
 
 logger = logging.getLogger(__name__)
 
-# bus = smbus.SMBus(1)
+bus = smbus.SMBus(1)
 
 
 class RelaysManager:
@@ -87,9 +87,9 @@ class RelaysManager:
 
         # ONLY FOR LOCAL TEST
         # current_state_raw = 0xCC  # 0b11001100
-        current_state_raw = 0xCC  # 0b00000000
+        # current_state_raw = 0xCC  # 0b00000000
 
-        # current_state_raw = ~bus.read_byte(self.serial_address) & 0xFF
+        current_state_raw = ~bus.read_byte(self.serial_address) & 0xFF
         current_state = "{0:08b}".format(current_state_raw)[2:]
 
         for i, state in enumerate(current_state):
@@ -135,7 +135,7 @@ class RelaysManager:
         logger.debug(f"Raw command: {raw_command}")
 
         # Writte serial command
-        # bus.write_byte(self.serial_address, raw_command)
+        bus.write_byte(self.serial_address, raw_command)
 
     def set_relays_statuses(self, relays_status: RelaysStatus):
         """Set relays statuses, used as callback for messages received in command relays topic"""
