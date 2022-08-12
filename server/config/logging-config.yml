@@ -1,0 +1,56 @@
+version: 1
+disable_existing_loggers: true
+
+formatters:
+  default:
+    format: "%(asctime)s [%(threadName)s] [%(levelname)s] %(name)s: %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: default
+
+  mqtt:
+    class: logging.handlers.RotatingFileHandler
+    formatter: default
+    filename: logs/mqtt.log
+    maxBytes: 52428800 # 50 Megabytes
+    backupCount: 9
+
+  # Not used in dev mode, but ketp if needed
+  # api_rest:
+  #   class: logging.handlers.RotatingFileHandler
+  #   formatter: default
+  #   filename: /var/log/rpi-relays/api-rest.log
+  #   maxBytes: 52428800 # 50 Megabytes
+  #   backupCount: 9
+
+root:
+  level: WARN
+  handlers: [console]
+
+loggers:
+  server.app:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+
+  server.interfaces:
+      level: DEBUG
+      handlers: [mqtt]
+      propagate: no
+
+  server.relays_manager:
+      level: DEBUG
+      handlers: [console]
+      propagate: no
+
+  server.rest_api:
+      level: DEBUG
+      handlers: [console]
+      propagate: no
+
+  api.rest:
+      level: DEBUG # Must be set to INFO to be active
+      handlers: [console]
+      propagate: no
