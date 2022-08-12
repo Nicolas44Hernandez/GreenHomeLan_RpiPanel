@@ -178,7 +178,7 @@ python test_scripts/mqtt_subscriber_test.py
 
 * [ ] DEfine logs rotation policy
 * [ ] MQTT Messages model as external lib
-* [ ] Test MQTT reconnection procedure
+* [X] MQTT reconnection procedure
 * [ ] Methods docs
 * [ ] Relays status -> state
 * [ ] Errors handle
