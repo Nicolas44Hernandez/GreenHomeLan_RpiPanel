@@ -7,6 +7,8 @@ from flask_smorest import Blueprint
 from server.relays_manager import relays_manager_service
 from .rest_model import SingleRelayStatusSchema, RelaysStatusResponseSchema, RelaysStatusQuerySchema
 from server.interfaces.mqtt.model import SingleRelayStatus, RelaysStatus
+from server.common import RpiElectricalPanelException, ErrorCode
+
 
 RELAYS = ["relay_0", "relay_1", "relay_2", "relay_3", "relay_4", "relay_5"]
 
@@ -79,8 +81,11 @@ class WifiBandsStatusApi(MethodView):
         relay_number = int(relay)
         # Sanity check
         if relay_number != args["relay_number"]:
-            # TODO: raise exception
-            return None
+            raise RpiElectricalPanelException(ErrorCode.RELAYS_NUMBER_DONT_MATCH)
+
+        # Sanity check
+        if relay_number not in range(0, 6):
+            raise RpiElectricalPanelException(ErrorCode.INVALID_RELAY_NUMBER)
 
         single_relay_status = SingleRelayStatus(relay_number=relay_number, status=args["status"])
 

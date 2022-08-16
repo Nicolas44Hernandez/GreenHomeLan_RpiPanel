@@ -7,7 +7,8 @@ from datetime import datetime
 from timeloop import Timeloop
 from server.interfaces.mqtt import SingleRelayStatus, RelaysStatus
 from datetime import timedelta
-import time
+from server.common import RpiElectricalPanelException, ErrorCode
+
 
 relays_status_timeloop = Timeloop()
 
@@ -69,6 +70,7 @@ class RelaysManager:
                 if new_relay_status.status != relays_current_status[new_relay_status.relay_number]:
                     relays_with_new_status.append(new_relay_status.relay_number)
         logger.info(f"relays_with_new_status: {relays_with_new_status}")
+
         # generate command
         new_status_raw_command = bin(relays_current_status_raw)[2:]
         for i in relays_with_new_status:
@@ -96,8 +98,7 @@ class RelaysManager:
             relay_status = True if status == "1" else False
             relays_status[i] = relay_status
 
-        # logger.debug(f"Retrieved current status : {current_status}")
-        # logger.info(f"Relays current status: {relays_status}")
+        logger.debug(f"Relays current status: {relays_status}")
         return current_status_raw, relays_status
 
     def get_relays_current_status_instance(self):
@@ -115,16 +116,13 @@ class RelaysManager:
         """get single relay status as a SingleRelayStatus instance"""
 
         if relay_number not in range(0, 6):
-            # TODO raise exception
-            return None
+            raise RpiElectricalPanelException(ErrorCode.INVALID_RELAY_NUMBER)
 
         _, relays_statuses = self.get_relays_current_status_instance()
 
         for relay_status in relays_statuses.relay_statuses:
             if relay_status.relay_number == relay_number:
                 return relay_status
-
-        # TODO raise exception if relay not found
         return None
 
     def send_relays_command(self, serial_command: str):
