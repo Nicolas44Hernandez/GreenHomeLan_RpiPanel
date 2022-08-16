@@ -6,7 +6,7 @@ from server.interfaces.mqtt import mqtt_client_interface
 import time
 from datetime import datetime
 
-HOST = "192.168.1.16"
+HOST = "192.168.43.107"
 CLIENT_NAME = "subscriber_test"
 CLIENT_PASSWORD = "lamp"
 TOPIC = "status/relays"

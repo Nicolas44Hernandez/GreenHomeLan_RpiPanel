@@ -46,11 +46,13 @@ class RelaysManager:
             self.mqtt_qos = app.config["MQTT_QOS"]
             self.mqtt_reconnection_timeout_in_secs = app.config["MQTT_RECONNECTION_TIMEOUT_IN_SEG"]
             self.mqtt_publish_timeout_in_secs = app.config["MQTT_MSG_PUBLISH_TIMEOUT_IN_SECS"]
+            self.serial_address = app.config["RELAYS_SERIAL_ADDRESS"]
+            self.relays_status_notification_period_in_secs = app.config[
+                "RELAYS_STATUS_NOTIFICATION_PERIOD_IN_SECS"
+            ]
 
             # Set the I2C address
             self.last_received_command_timestamp = datetime.now()
-            # TODO: set in config
-            self.serial_address = 0x20
 
             # Connect to MQTT broker
             self.init_mqtt_service()
@@ -163,8 +165,9 @@ class RelaysManager:
         self.mqtt_client.loop_start()
 
         # Start relays status notification service
-        # TODO: time in conf
-        @relays_status_timeloop.job(interval=timedelta(seconds=5))
+        @relays_status_timeloop.job(
+            interval=timedelta(seconds=self.relays_status_notification_period_in_secs)
+        )
         def send_relays_status():
             # retrieve relays status
             if self.mqtt_client.connected:

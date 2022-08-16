@@ -6,7 +6,7 @@ from server.interfaces.mqtt import mqtt_client_interface
 from server.interfaces.mqtt.model import SingleRelayStatus, RelaysStatus
 import time
 
-HOST = "192.168.1.16"
+HOST = "192.168.43.107"
 CLIENT_NAME = "publisher_test"
 CLIENT_PASSWORD = "lamp"
 TOPIC = "command/relays"

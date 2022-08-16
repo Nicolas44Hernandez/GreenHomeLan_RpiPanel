@@ -182,6 +182,6 @@ python test_scripts/mqtt_subscriber_test.py
 * [*] Methods docs
 * [X] Relays state -> status
 * [*] Errors handle
-* [*] Time params to conf
+* [X] Time params to conf
 * [ ] Explain MQTT broker and topics in doc (Confluence ?)
 * [ ] Explain MQTT messages in doc (Confluence ?)
