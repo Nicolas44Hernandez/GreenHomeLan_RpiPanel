@@ -98,6 +98,14 @@ mosquitto_sub -d -u username -P password -t test
 mosquitto_pub -d -u username -P password -t test -m "Hello, World!"
 ```
 
+**To empty MQTT Mosquito Broker**
+
+```bash
+sudo systemctl stop mosquitto.service
+sudo rm /var/lib/mosquitto/mosquitto.db
+sudo systemctl start mosquitto.service
+```
+
 ## **Run the rpi-electrical-panel application**
 
 ### **1. Install dependencies**
