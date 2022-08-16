@@ -1,4 +1,4 @@
-# import smbus
+import smbus
 import logging
 from typing import Iterable
 from flask import Flask
@@ -7,15 +7,14 @@ from datetime import datetime
 from timeloop import Timeloop
 from server.interfaces.mqtt import SingleRelayStatus, RelaysStatus
 from datetime import timedelta
-import time
+from server.common import RpiElectricalPanelException, ErrorCode
 
-# TODO Status -> state
 
 relays_status_timeloop = Timeloop()
 
 logger = logging.getLogger(__name__)
 
-# bus = smbus.SMBus(1)
+bus = smbus.SMBus(1)
 
 
 class RelaysManager:
@@ -27,7 +26,8 @@ class RelaysManager:
     mqtt_command_relays_topic: str
     mqtt_relays_status_topic: str
     mqtt_qos: int
-    mqtt_max_connection_retries: int
+    mqtt_reconnection_timeout_in_secs: int
+    mqtt_publish_timeout_in_secs: int
     last_received_command_timestamp: datetime
 
     def __init__(self, app: Flask = None) -> None:
@@ -45,12 +45,15 @@ class RelaysManager:
             self.mqtt_command_relays_topic = app.config["MQTT_COMMAND_RELAYS_TOPIC"]
             self.mqtt_relays_status_topic = app.config["MQTT_RELAYS_STATUS_TOPIC"]
             self.mqtt_qos = app.config["MQTT_QOS"]
-            self.mqtt_max_connection_retries = app.config["MQTT_MAX_CONNECTION_RETRIES"]
+            self.mqtt_reconnection_timeout_in_secs = app.config["MQTT_RECONNECTION_TIMEOUT_IN_SEG"]
+            self.mqtt_publish_timeout_in_secs = app.config["MQTT_MSG_PUBLISH_TIMEOUT_IN_SECS"]
+            self.serial_address = app.config["RELAYS_SERIAL_ADDRESS"]
+            self.relays_status_notification_period_in_secs = app.config[
+                "RELAYS_STATUS_NOTIFICATION_PERIOD_IN_SECS"
+            ]
 
             # Set the I2C address
             self.last_received_command_timestamp = datetime.now()
-            # TODO: set in config
-            self.serial_address = 0x20
 
             # Connect to MQTT broker
             self.init_mqtt_service()
@@ -58,71 +61,68 @@ class RelaysManager:
     def generate_serial_command(self, new_relay_statuses: Iterable[SingleRelayStatus]):
         """Generate serial command to send to control the relays"""
 
-        relays_current_state_raw, relays_current_states = self.get_relays_current_states()
-        relays_with_new_state = []
+        relays_current_status_raw, relays_current_status = self.get_relays_current_status()
+        relays_with_new_status = []
 
-        # Retreive the relays that change of state
+        # Retreive the relays that change of status
         for new_relay_status in new_relay_statuses:
-            if new_relay_status.relay_number in relays_current_states:
-                if new_relay_status.status != relays_current_states[new_relay_status.relay_number]:
-                    relays_with_new_state.append(new_relay_status.relay_number)
-        logger.info(f"relays_with_new_states: {relays_with_new_state}")
+            if new_relay_status.relay_number in relays_current_status:
+                if new_relay_status.status != relays_current_status[new_relay_status.relay_number]:
+                    relays_with_new_status.append(new_relay_status.relay_number)
+        logger.info(f"relays_with_new_status: {relays_with_new_status}")
+
         # generate command
-        new_state_raw_command = bin(relays_current_state_raw)[2:]
-        for i in relays_with_new_state:
-            new_status = "0" if relays_current_states[i] else "1"
-            new_state_raw_command = (
-                new_state_raw_command[: i + 2] + new_status + new_state_raw_command[i + 3 :]
+        new_status_raw_command = bin(relays_current_status_raw)[2:]
+        for i in relays_with_new_status:
+            new_status = "0" if relays_current_status[i] else "1"
+            new_status_raw_command = (
+                new_status_raw_command[: i + 2] + new_status + new_status_raw_command[i + 3 :]
             )
-        relays_new_status_command = int(new_state_raw_command, 2)
+        relays_new_status_command = int(new_status_raw_command, 2)
 
         logger.info(f"Generated command: {relays_new_status_command}")
         return relays_new_status_command
 
-    def get_relays_current_states(self):
+    def get_relays_current_status(self):
         """retrieve relays current status and format"""
-        relays_states = {}
+        relays_status = {}
 
         # ONLY FOR LOCAL TEST
-        # current_state_raw = 0xCC  # 0b11001100
-        current_state_raw = 0xCC  # 0b00000000
+        # current_status_raw = 0xCC  # 0b11001100
+        # current_status_raw = 0xCC  # 0b00000000
 
-        # current_state_raw = ~bus.read_byte(self.serial_address) & 0xFF
-        current_state = "{0:08b}".format(current_state_raw)[2:]
+        current_status_raw = ~bus.read_byte(self.serial_address) & 0xFF
+        current_status = "{0:08b}".format(current_status_raw)[2:]
 
-        for i, state in enumerate(current_state):
-            relay_status = True if state == "1" else False
-            relays_states[i] = relay_status
+        for i, status in enumerate(current_status):
+            relay_status = True if status == "1" else False
+            relays_status[i] = relay_status
 
-        # logger.debug(f"Retrieved current state : {current_state}")
-        # logger.info(f"Relays current states: {relays_states}")
-        return current_state_raw, relays_states
+        logger.debug(f"Relays current status: {relays_status}")
+        return current_status_raw, relays_status
 
-    def get_relays_current_states_instance(self):
+    def get_relays_current_status_instance(self):
         """retrieve relays current status as a RelaysStatus instance"""
 
-        current_state_raw, relays_current_states = self.get_relays_current_states()
+        current_status_raw, relays_current_status = self.get_relays_current_status()
         relay_statuses = []
-        for relay_number, relay_status in relays_current_states.items():
+        for relay_number, relay_status in relays_current_status.items():
             relay_statuses.append(SingleRelayStatus(relay_number=relay_number, status=relay_status))
-        relays_current_states = RelaysStatus(relay_statuses=relay_statuses, command=False)
+        relays_current_status = RelaysStatus(relay_statuses=relay_statuses, command=False)
 
-        return current_state_raw, relays_current_states
+        return current_status_raw, relays_current_status
 
-    def get_single_relay_state_instance(self, relay_number: int):
+    def get_single_relay_status_instance(self, relay_number: int):
         """get single relay status as a SingleRelayStatus instance"""
 
         if relay_number not in range(0, 6):
-            # TODO raise exception
-            return None
+            raise RpiElectricalPanelException(ErrorCode.INVALID_RELAY_NUMBER)
 
-        _, relays_statuses = self.get_relays_current_states_instance()
+        _, relays_statuses = self.get_relays_current_status_instance()
 
         for relay_status in relays_statuses.relay_statuses:
             if relay_status.relay_number == relay_number:
                 return relay_status
-
-        # TODO raise exception if relay not found
         return None
 
     def send_relays_command(self, serial_command: str):
@@ -133,7 +133,7 @@ class RelaysManager:
         logger.debug(f"Raw command: {raw_command}")
 
         # Writte serial command
-        # bus.write_byte(self.serial_address, raw_command)
+        bus.write_byte(self.serial_address, raw_command)
 
     def set_relays_statuses(self, relays_status: RelaysStatus):
         """Set relays statuses, used as callback for messages received in command relays topic"""
@@ -156,20 +156,29 @@ class RelaysManager:
             username=self.mqtt_username,
             password=self.mqtt_password,
             subscriptions={self.mqtt_command_relays_topic: self.set_relays_statuses},
+            reconnection_timeout_in_secs=self.mqtt_reconnection_timeout_in_secs,
+            publish_timeout_in_secs=self.mqtt_publish_timeout_in_secs,
         )
         self.mqtt_client.connect()
         self.mqtt_client.loop_start()
 
         # Start relays status notification service
-        # TODO: time in conf
-        @relays_status_timeloop.job(interval=timedelta(seconds=5))
+        @relays_status_timeloop.job(
+            interval=timedelta(seconds=self.relays_status_notification_period_in_secs)
+        )
         def send_relays_status():
             # retrieve relays status
-            current_state_raw, relays_current_states = self.get_relays_current_states_instance()
-            logger.info(f"Publish current relays status: {bin(current_state_raw)}")
-            self.mqtt_client.publish(
-                topic=self.mqtt_relays_status_topic, message=relays_current_states
-            )
+            if self.mqtt_client.connected:
+                (
+                    current_status_raw,
+                    relays_current_status,
+                ) = self.get_relays_current_status_instance()
+                logger.info(f"Publish current relays status: {bin(current_status_raw)}")
+                self.mqtt_client.publish(
+                    topic=self.mqtt_relays_status_topic, message=relays_current_status
+                )
+            else:
+                logger.info(f"MQTT Client disconnected, relays status not sent")
 
         relays_status_timeloop.start(block=False)
 

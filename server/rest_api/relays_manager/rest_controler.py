@@ -7,6 +7,8 @@ from flask_smorest import Blueprint
 from server.relays_manager import relays_manager_service
 from .rest_model import SingleRelayStatusSchema, RelaysStatusResponseSchema, RelaysStatusQuerySchema
 from server.interfaces.mqtt.model import SingleRelayStatus, RelaysStatus
+from server.common import RpiElectricalPanelException, ErrorCode
+
 
 RELAYS = ["relay_0", "relay_1", "relay_2", "relay_3", "relay_4", "relay_5"]
 
@@ -27,8 +29,10 @@ class RelaysStatusApi(MethodView):
     def get(self):
         """Get relays status"""
 
+        logger.info(f"GET relays/")
+
         # Call relays manager services to get relays status
-        _, relays_status = relays_manager_service.get_relays_current_states_instance()
+        _, relays_status = relays_manager_service.get_relays_current_status_instance()
 
         return relays_status
 
@@ -37,6 +41,8 @@ class RelaysStatusApi(MethodView):
     @bp.response(status_code=200, schema=RelaysStatusResponseSchema)
     def post(self, args: RelaysStatusQuerySchema):
         """Set relays status"""
+
+        logger.info(f"POST relays/ {args}")
 
         # Build RelayStatus instance
         statuses_from_query = []
@@ -67,8 +73,10 @@ class WifiBandsStatusApi(MethodView):
     def get(self, relay: str):
         """Get single relay status"""
 
+        logger.info(f"GET relays/sinle/{relay}")
+
         # Call relays_manager_service to get relay status
-        return relays_manager_service.get_single_relay_state_instance(int(relay))
+        return relays_manager_service.get_single_relay_status_instance(int(relay))
 
     @bp.doc(responses={400: "BAD_REQUEST"})
     @bp.arguments(SingleRelayStatusSchema, location="query")
@@ -76,11 +84,16 @@ class WifiBandsStatusApi(MethodView):
     def post(self, args: SingleRelayStatusSchema, relay: str):
         """Set single relays status"""
 
+        logger.info(f"POST relays/sinle/{relay} {args}")
+
         relay_number = int(relay)
         # Sanity check
         if relay_number != args["relay_number"]:
-            # TODO: raise exception
-            return None
+            raise RpiElectricalPanelException(ErrorCode.RELAYS_NUMBER_DONT_MATCH)
+
+        # Sanity check
+        if relay_number not in range(0, 6):
+            raise RpiElectricalPanelException(ErrorCode.INVALID_RELAY_NUMBER)
 
         single_relay_status = SingleRelayStatus(relay_number=relay_number, status=args["status"])
 

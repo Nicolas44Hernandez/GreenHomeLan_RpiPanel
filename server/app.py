@@ -8,6 +8,7 @@ from flask import Flask
 from .relays_manager import relays_manager_service
 from .extension import api
 from .rest_api.relays_manager import bp as relays_manager_bp
+from .common import RpiElectricalPanelException, handle_rpi_electrical_panel_exception
 
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,6 @@ def register_extensions(app):
 def register_blueprints(app: Flask):
     """Store App APIs blueprints."""
     # Register error handler
-    # TODO: error handler
-    # app.register_error_handler(ServerBoxException, handle_server_box_exception)
+    app.register_error_handler(RpiElectricalPanelException, handle_rpi_electrical_panel_exception)
     # Register REST blueprints
     api.register_blueprint(relays_manager_bp)

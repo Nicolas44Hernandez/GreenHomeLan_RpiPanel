@@ -17,13 +17,12 @@ handlers:
     maxBytes: 52428800 # 50 Megabytes
     backupCount: 9
 
-  # Not used in dev mode, but ketp if needed
-  # api_rest:
-  #   class: logging.handlers.RotatingFileHandler
-  #   formatter: default
-  #   filename: /var/log/rpi-relays/api-rest.log
-  #   maxBytes: 52428800 # 50 Megabytes
-  #   backupCount: 9
+  api_rest:
+    class: logging.handlers.RotatingFileHandler
+    formatter: default
+    filename: logs/api-rest.log
+    maxBytes: 52428800 # 50 Megabytes
+    backupCount: 9
 
 root:
   level: WARN
@@ -47,10 +46,5 @@ loggers:
 
   server.rest_api:
       level: DEBUG
-      handlers: [console]
-      propagate: no
-
-  api.rest:
-      level: DEBUG # Must be set to INFO to be active
-      handlers: [console]
+      handlers: [api_rest]
       propagate: no

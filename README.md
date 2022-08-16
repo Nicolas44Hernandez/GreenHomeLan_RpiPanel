@@ -98,6 +98,14 @@ mosquitto_sub -d -u username -P password -t test
 mosquitto_pub -d -u username -P password -t test -m "Hello, World!"
 ```
 
+**To empty MQTT Mosquito Broker**
+
+```bash
+sudo systemctl stop mosquitto.service
+sudo rm /var/lib/mosquitto/mosquitto.db
+sudo systemctl start mosquitto.service
+```
+
 ## **Run the rpi-electrical-panel application**
 
 ### **1. Install dependencies**
@@ -137,8 +145,6 @@ touch api-rest.log
 
 Define the flask environment variables:
 
-TODO:double check vars
-
 ```bash
 export FLASK_APP="server/app:create_app()"
 export FLASK_ENV=production
@@ -176,12 +182,12 @@ python test_scripts/mqtt_subscriber_test.py
 
 ## TODO LIST
 
-* [ ] DEfine logs rotation policy
+* [X] Define logs rotation policy
 * [ ] MQTT Messages model as external lib
-* [ ] Test MQTT reconnection procedure
-* [ ] Methods docs
-* [ ] Relays status -> state
-* [ ] Errors handle
-* [ ] Time params to conf
+* [X] MQTT reconnection procedure
+* [X] Methods docs
+* [X] Relays state -> status
+* [X] Errors handle
+* [X] Time params to conf
 * [ ] Explain MQTT broker and topics in doc (Confluence ?)
 * [ ] Explain MQTT messages in doc (Confluence ?)
