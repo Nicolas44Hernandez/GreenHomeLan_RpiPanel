@@ -28,7 +28,7 @@ class RelaysStatusApi(MethodView):
         """Get relays status"""
 
         # Call relays manager services to get relays status
-        _, relays_status = relays_manager_service.get_relays_current_states_instance()
+        _, relays_status = relays_manager_service.get_relays_current_status_instance()
 
         return relays_status
 
@@ -68,7 +68,7 @@ class WifiBandsStatusApi(MethodView):
         """Get single relay status"""
 
         # Call relays_manager_service to get relay status
-        return relays_manager_service.get_single_relay_state_instance(int(relay))
+        return relays_manager_service.get_single_relay_status_instance(int(relay))
 
     @bp.doc(responses={400: "BAD_REQUEST"})
     @bp.arguments(SingleRelayStatusSchema, location="query")

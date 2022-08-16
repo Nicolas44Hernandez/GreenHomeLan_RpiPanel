@@ -176,12 +176,12 @@ python test_scripts/mqtt_subscriber_test.py
 
 ## TODO LIST
 
-* [ ] DEfine logs rotation policy
+* [*] Define logs rotation policy
 * [ ] MQTT Messages model as external lib
 * [X] MQTT reconnection procedure
-* [ ] Methods docs
-* [ ] Relays status -> state
-* [ ] Errors handle
-* [ ] Time params to conf
+* [*] Methods docs
+* [X] Relays state -> status
+* [*] Errors handle
+* [*] Time params to conf
 * [ ] Explain MQTT broker and topics in doc (Confluence ?)
 * [ ] Explain MQTT messages in doc (Confluence ?)
