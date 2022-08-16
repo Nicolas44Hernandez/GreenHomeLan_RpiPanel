@@ -174,7 +174,7 @@ python test_scripts/mqtt_subscriber_test.py
 
 ## TODO LIST
 
-* [*] Define logs rotation policy
+* [X] Define logs rotation policy
 * [ ] MQTT Messages model as external lib
 * [X] MQTT reconnection procedure
 * [X] Methods docs

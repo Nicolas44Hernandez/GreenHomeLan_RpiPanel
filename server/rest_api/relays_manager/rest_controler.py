@@ -29,6 +29,8 @@ class RelaysStatusApi(MethodView):
     def get(self):
         """Get relays status"""
 
+        logger.info(f"GET relays/")
+
         # Call relays manager services to get relays status
         _, relays_status = relays_manager_service.get_relays_current_status_instance()
 
@@ -39,6 +41,8 @@ class RelaysStatusApi(MethodView):
     @bp.response(status_code=200, schema=RelaysStatusResponseSchema)
     def post(self, args: RelaysStatusQuerySchema):
         """Set relays status"""
+
+        logger.info(f"POST relays/ {args}")
 
         # Build RelayStatus instance
         statuses_from_query = []
@@ -69,6 +73,8 @@ class WifiBandsStatusApi(MethodView):
     def get(self, relay: str):
         """Get single relay status"""
 
+        logger.info(f"GET relays/sinle/{relay}")
+
         # Call relays_manager_service to get relay status
         return relays_manager_service.get_single_relay_status_instance(int(relay))
 
@@ -77,6 +83,8 @@ class WifiBandsStatusApi(MethodView):
     @bp.response(status_code=200, schema=SingleRelayStatusSchema)
     def post(self, args: SingleRelayStatusSchema, relay: str):
         """Set single relays status"""
+
+        logger.info(f"POST relays/sinle/{relay} {args}")
 
         relay_number = int(relay)
         # Sanity check
