@@ -137,8 +137,6 @@ touch api-rest.log
 
 Define the flask environment variables:
 
-TODO:double check vars
-
 ```bash
 export FLASK_APP="server/app:create_app()"
 export FLASK_ENV=production
@@ -179,7 +177,7 @@ python test_scripts/mqtt_subscriber_test.py
 * [*] Define logs rotation policy
 * [ ] MQTT Messages model as external lib
 * [X] MQTT reconnection procedure
-* [*] Methods docs
+* [X] Methods docs
 * [X] Relays state -> status
 * [X] Errors handle
 * [X] Time params to conf

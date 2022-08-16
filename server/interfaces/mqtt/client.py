@@ -135,7 +135,7 @@ class MQTTClient:
         return message_publish_info
 
     def subscribe(self, topic: str, callback: Callable[[Msg], None], qos=1):
-        """ "Subscribe to a topic"""
+        """Subscribe to a topic"""
 
         logger.debug(f"Subscribe to topic {topic}")
         self._callbacks[topic] = callback
