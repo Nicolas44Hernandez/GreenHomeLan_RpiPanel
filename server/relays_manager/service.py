@@ -152,7 +152,7 @@ class RelaysManager:
         self.send_relays_command(relays_new_status_serial_command)
 
         # notify new relays status
-        # self.notify_relays_status()
+        self.notify_relays_status()
 
     def notify_relays_status(self):
         """Pubish MQTT message to notify relays status"""

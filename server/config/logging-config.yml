@@ -36,6 +36,11 @@ loggers:
 
   server.interfaces:
       level: DEBUG
+      handlers: [console]
+      propagate: no
+
+  server.interfaces.mqtt:
+      level: DEBUG
       handlers: [mqtt]
       propagate: no
 

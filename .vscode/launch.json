@@ -8,7 +8,7 @@
             "name": "TEST Run MQTT Publisher",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/test_scripts/mqtt_publisher_test.py",
+            "program": "/rpi-electrical-panel/test_scripts/mqtt_publisher_test.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
@@ -16,7 +16,7 @@
             "name": "TEST Run MQTT Subscriber",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/test_scripts/mqtt_subscriber_test.py",
+            "program": "/rpi-electrical-panel/test_scripts/mqtt_subscriber_test.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
