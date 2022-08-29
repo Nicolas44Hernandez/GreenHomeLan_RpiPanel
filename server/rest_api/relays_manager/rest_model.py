@@ -14,9 +14,6 @@ class SingleRelayStatusSchema(Schema):
     status = Boolean(required=True, allow_none=False)
 
 
-Boolean
-
-
 class RelaysStatusResponseSchema(Schema):
     """REST ressource for relays status response"""
 

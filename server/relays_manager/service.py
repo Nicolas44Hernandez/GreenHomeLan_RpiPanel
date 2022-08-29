@@ -58,6 +58,9 @@ class RelaysManager:
             # Connect to MQTT broker
             self.init_mqtt_service()
 
+            # Init relays status
+            self.init_relays_status()
+
     def generate_serial_command(self, new_relay_statuses: Iterable[SingleRelayStatus]):
         """Generate serial command to send to control the relays"""
 
@@ -148,6 +151,38 @@ class RelaysManager:
         # Send relays serial command
         self.send_relays_command(relays_new_status_serial_command)
 
+        # notify new relays status
+        # self.notify_relays_status()
+
+    def notify_relays_status(self):
+        """Pubish MQTT message to notify relays status"""
+        # retrieve relays status
+        if self.mqtt_client.connected:
+            current_status_raw, relays_current_status = self.get_relays_current_status_instance()
+            logger.info(f"Publish current relays status: {bin(current_status_raw)}")
+            self.mqtt_client.publish(
+                topic=self.mqtt_relays_status_topic, message=relays_current_status
+            )
+        else:
+            logger.info(f"MQTT Client disconnected, relays status not sent")
+
+    def init_relays_status(self):
+        """Set relays status to OFF"""
+
+        # Initial relays status
+        relays_statuses = [
+            SingleRelayStatus(relay_number=0, status=False),
+            SingleRelayStatus(relay_number=1, status=False),
+            SingleRelayStatus(relay_number=2, status=False),
+            SingleRelayStatus(relay_number=3, status=False),
+            SingleRelayStatus(relay_number=4, status=False),
+            SingleRelayStatus(relay_number=5, status=False),
+        ]
+        initial_relays_status = RelaysStatus(relay_statuses=relays_statuses, command=True)
+
+        # Set initial status
+        self.set_relays_statuses(relays_status=initial_relays_status)
+
     def init_mqtt_service(self):
         """Connect to MQTT broker"""
 
@@ -167,18 +202,7 @@ class RelaysManager:
             interval=timedelta(seconds=self.relays_status_notification_period_in_secs)
         )
         def send_relays_status():
-            # retrieve relays status
-            if self.mqtt_client.connected:
-                (
-                    current_status_raw,
-                    relays_current_status,
-                ) = self.get_relays_current_status_instance()
-                logger.info(f"Publish current relays status: {bin(current_status_raw)}")
-                self.mqtt_client.publish(
-                    topic=self.mqtt_relays_status_topic, message=relays_current_status
-                )
-            else:
-                logger.info(f"MQTT Client disconnected, relays status not sent")
+            self.notify_relays_status()
 
         relays_status_timeloop.start(block=False)
 

@@ -6,7 +6,7 @@ from server.interfaces.mqtt import mqtt_client_interface
 import time
 from datetime import datetime
 
-HOST = "192.168.43.107"
+HOST = "192.168.1.19"
 CLIENT_NAME = "subscriber_test"
 CLIENT_PASSWORD = "lamp"
 TOPIC = "status/relays"
@@ -14,7 +14,7 @@ TOPIC = "status/relays"
 
 def callback_on_receive(message: str):
     print(f"Message received on topic  {TOPIC} {datetime.now()}")
-    print(f"{message}")
+    print(f"timestamp: {message.timestamp}")
 
 
 mqtt_client = mqtt_client_interface(
