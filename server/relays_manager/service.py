@@ -1,5 +1,6 @@
-import smbus
+import smbus2
 import logging
+import time
 from typing import Iterable
 from flask import Flask
 from server.interfaces.mqtt import mqtt_client_interface
@@ -14,7 +15,7 @@ relays_status_timeloop = Timeloop()
 
 logger = logging.getLogger(__name__)
 
-bus = smbus.SMBus(1)
+bus = smbus2.SMBus(1)
 
 
 class RelaysManager:
@@ -57,6 +58,9 @@ class RelaysManager:
 
             # Connect to MQTT broker
             self.init_mqtt_service()
+
+            # Test relays
+            self.test_relays_status()
 
             # Init relays status
             self.init_relays_status()
@@ -182,6 +186,37 @@ class RelaysManager:
 
         # Set initial status
         self.set_relays_statuses(relays_status=initial_relays_status)
+
+    def test_relays_status(self):
+        """Used to test the relays in app init"""
+        # relays status on
+        relays_statuses_on = [
+            SingleRelayStatus(relay_number=0, status=True),
+            SingleRelayStatus(relay_number=1, status=True),
+            SingleRelayStatus(relay_number=2, status=True),
+            SingleRelayStatus(relay_number=3, status=True),
+            SingleRelayStatus(relay_number=4, status=True),
+            SingleRelayStatus(relay_number=5, status=True),
+        ]
+        # relays status off
+        relays_statuses_off = [
+            SingleRelayStatus(relay_number=0, status=False),
+            SingleRelayStatus(relay_number=1, status=False),
+            SingleRelayStatus(relay_number=2, status=False),
+            SingleRelayStatus(relay_number=3, status=False),
+            SingleRelayStatus(relay_number=4, status=False),
+            SingleRelayStatus(relay_number=5, status=False),
+        ]
+
+        relays_status_on = RelaysStatus(relay_statuses=relays_statuses_on, command=True)
+        relays_status_off = RelaysStatus(relay_statuses=relays_statuses_off, command=True)
+
+        # Set initial status
+        for i in range(3):
+            self.set_relays_statuses(relays_status=relays_status_on)
+            time.sleep(0.2)
+            self.set_relays_statuses(relays_status=relays_status_off)
+            time.sleep(0.2)
 
     def init_mqtt_service(self):
         """Connect to MQTT broker"""

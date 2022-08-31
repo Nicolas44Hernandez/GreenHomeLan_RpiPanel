@@ -138,7 +138,7 @@ Log files defined in configuration file located in *server/config/logging-config
 ```bash
 mkdir logs
 touch logs/mqtt.log
-touch api-rest.log
+touch logs/api-rest.log
 ```
 
 ### **3. Set env vars**
