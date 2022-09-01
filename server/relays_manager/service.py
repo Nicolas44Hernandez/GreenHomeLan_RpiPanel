@@ -17,6 +17,15 @@ logger = logging.getLogger(__name__)
 
 bus = smbus2.SMBus(1)
 
+RELAYS_STATUSES_OFF = [
+    SingleRelayStatus(relay_number=0, status=False),
+    SingleRelayStatus(relay_number=1, status=False),
+    SingleRelayStatus(relay_number=2, status=False),
+    SingleRelayStatus(relay_number=3, status=False),
+    SingleRelayStatus(relay_number=4, status=False),
+    SingleRelayStatus(relay_number=5, status=False),
+]
+
 
 class RelaysManager:
     """Manager for relays control"""
@@ -142,7 +151,7 @@ class RelaysManager:
         # Writte serial command
         bus.write_byte(self.serial_address, raw_command)
 
-    def set_relays_statuses(self, relays_status: RelaysStatus):
+    def set_relays_statuses(self, relays_status: RelaysStatus, notify: bool = False):
         """Set relays statuses, used as callback for messages received in command relays topic"""
         logger.debug(f"Relays command received : {relays_status}")
         if relays_status.timestamp < self.last_received_command_timestamp:
@@ -156,7 +165,8 @@ class RelaysManager:
         self.send_relays_command(relays_new_status_serial_command)
 
         # notify new relays status
-        self.notify_relays_status()
+        if notify:
+            self.notify_relays_status()
 
     def notify_relays_status(self):
         """Pubish MQTT message to notify relays status"""
@@ -174,49 +184,28 @@ class RelaysManager:
         """Set relays status to OFF"""
 
         # Initial relays status
-        relays_statuses = [
-            SingleRelayStatus(relay_number=0, status=False),
-            SingleRelayStatus(relay_number=1, status=False),
-            SingleRelayStatus(relay_number=2, status=False),
-            SingleRelayStatus(relay_number=3, status=False),
-            SingleRelayStatus(relay_number=4, status=False),
-            SingleRelayStatus(relay_number=5, status=False),
-        ]
-        initial_relays_status = RelaysStatus(relay_statuses=relays_statuses, command=True)
+        initial_relays_status = RelaysStatus(relay_statuses=RELAYS_STATUSES_OFF, command=True)
 
         # Set initial status
-        self.set_relays_statuses(relays_status=initial_relays_status)
+        self.set_relays_statuses(relays_status=initial_relays_status, notify=True)
 
     def test_relays_status(self):
         """Used to test the relays in app init"""
-        # relays status on
-        relays_statuses_on = [
-            SingleRelayStatus(relay_number=0, status=True),
-            SingleRelayStatus(relay_number=1, status=True),
-            SingleRelayStatus(relay_number=2, status=True),
-            SingleRelayStatus(relay_number=3, status=True),
-            SingleRelayStatus(relay_number=4, status=True),
-            SingleRelayStatus(relay_number=5, status=True),
-        ]
-        # relays status off
-        relays_statuses_off = [
-            SingleRelayStatus(relay_number=0, status=False),
-            SingleRelayStatus(relay_number=1, status=False),
-            SingleRelayStatus(relay_number=2, status=False),
-            SingleRelayStatus(relay_number=3, status=False),
-            SingleRelayStatus(relay_number=4, status=False),
-            SingleRelayStatus(relay_number=5, status=False),
-        ]
 
-        relays_status_on = RelaysStatus(relay_statuses=relays_statuses_on, command=True)
-        relays_status_off = RelaysStatus(relay_statuses=relays_statuses_off, command=True)
+        relays_status_off = RelaysStatus(relay_statuses=RELAYS_STATUSES_OFF, command=True)
+        self.set_relays_statuses(relays_status=relays_status_off)
+        time.sleep(0.1)
 
-        # Set initial status
-        for i in range(3):
-            self.set_relays_statuses(relays_status=relays_status_on)
-            time.sleep(0.2)
-            self.set_relays_statuses(relays_status=relays_status_off)
-            time.sleep(0.2)
+        for i in range(6):
+            self.set_relays_statuses(
+                relays_status=RelaysStatus(
+                    relay_statuses=[
+                        SingleRelayStatus(relay_number=i, status=True),
+                    ],
+                    command=True,
+                )
+            )
+            time.sleep(0.1)
 
     def init_mqtt_service(self):
         """Connect to MQTT broker"""

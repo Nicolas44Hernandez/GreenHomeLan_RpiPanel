@@ -57,8 +57,7 @@ class RelaysStatusApi(MethodView):
         )
 
         # Call relays_manager_service to set relays statuses
-        relays_manager_service.set_relays_statuses(relays_statuses)
-
+        relays_manager_service.set_relays_statuses(relays_status=relays_statuses, notify=True)
         return relays_statuses
 
 
@@ -103,6 +102,6 @@ class WifiBandsStatusApi(MethodView):
             command=True,
             timestamp=datetime.now(),
         )
-        relays_manager_service.set_relays_statuses(relays_status=relays_status)
+        relays_manager_service.set_relays_statuses(relays_status=relays_status, notify=True)
 
         return single_relay_status
