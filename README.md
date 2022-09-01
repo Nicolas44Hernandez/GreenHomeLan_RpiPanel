@@ -142,6 +142,17 @@ mkdir logs
 touch logs/mqtt.log logs/api-rest.log logs/app.log
 ```
 
+## **Disable Bluethoot and Wifi interfaces**
+```bash
+sudo nano /boot/config.txt
+```
+
+Find the section *[all]* and add the following lines
+```bash
+dtoverlay=disable-wifi
+dtoverlay=disable-bt
+```
+
 ## **Run the rpi-electrical-panel application**
 
 Set the flask environment variables:
