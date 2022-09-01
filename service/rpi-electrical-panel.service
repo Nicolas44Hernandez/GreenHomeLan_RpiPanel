@@ -1,0 +1,14 @@
+[Unit]
+Description=RPI electrical panel
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/rpi-electrical-panel
+Environment=FLASK_CONFIG=production
+Environment=FLASK_APP="server/app:create_app()"
+ExecStart=/home/pi/rpi-electrical-panel/.venv/bin/flask run
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

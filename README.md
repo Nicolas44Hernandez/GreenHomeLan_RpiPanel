@@ -12,7 +12,7 @@ The [RLB0665N 6CH Relay board](http://osaelectronics.com/get/raspberry/automatio
 Download the last version of the Bullseye Raspberri PI OS and flash it to the SD card.
 You can use the [Raspberry Pi imager](https://www.raspberrypi.com/software/) to download and flash the OS.
 
-1. Activate the SSH, I2S and configure the localisation and WLAN options
+Activate the SSH, I2S and configure the localisation and WLAN options
 
 ```bash
 sudo raspi-config
@@ -29,22 +29,6 @@ sudo reboot now
 ```
 
 As of now, the screen and keyboard are no longer useful. You can connect to the raspberry via SSH
-
-2. Keyboard configurations (Only for FR keyboards layout)
-
-```bash
-sudo nano /etc/default/keyboard
-```
-
-modify the line *XKBLAYOUT="gb"* par *XKBLAYOUT="fr"*
-
-In order to stop receiving environment variables from the SSH client you have to modify the ssh configuration file:
-
-```bash
-sudo nano /etc/ssh/sshd_config
-```
-
- Comment the line *`AcceptEnv LANG LC_*`*
 
 ## **MQTT Broker setup**
 
@@ -91,11 +75,11 @@ sudo reboot now
 Test de MQTT broker by using the *mosquito_sub* and *mosquito_pub* commands (run commands in separated terminals)
 
 ```bash
-mosquitto_sub -d -u username -P password -t test
+mosquitto_sub -d -u username -t test
 ```
 
 ```bash
-mosquitto_pub -d -u username -P password -t test -m "Hello, World!"
+mosquitto_pub -d -u username -t test -m "Hello, World!"
 ```
 
 **To empty MQTT Mosquito Broker**
@@ -105,17 +89,35 @@ sudo systemctl stop mosquitto.service
 sudo rm /var/lib/mosquitto/mosquitto.db
 sudo systemctl start mosquitto.service
 ```
+## Git setup ##
+Install git
+```bash
+sudo apt install git
+```
+setup identity:
+```bash
+git config --global user.name "John Doe"
+git config --global user.email johndoe@example.com
+```
+[Generate and add SSH key to your github account](https://docs.github.com/es/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 
-## **Run the rpi-electrical-panel application**
+## Clone the project ##
+```bash
+git clone git@github.com:<git_user_id>/rpi-electrical-panel.git
+```
 
-### **1. Install dependencies**
+## Install project dependencies ##
 
 Install the project dependencies in a virtual environement
 
 To install the dependencies manager [poetry](https://python-poetry.org/)
 
 ```bash
- curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
+```
+
+```bash
+sudo apt-get install python3-venv
 ```
 
 Configure poetry to create virtual environments in the project directory
@@ -131,27 +133,23 @@ poetry install
 poetry shell
 ```
 
-### **2. Create logfiles**
+Create logfiles
 
 Log files defined in configuration file located in *server/config/logging-config.yml* must be created before launching the application
 
 ```bash
 mkdir logs
-touch logs/mqtt.log
-touch logs/api-rest.log
+touch logs/mqtt.log logs/api-rest.log logs/app.log
 ```
 
-### **3. Set env vars**
+## **Run the rpi-electrical-panel application**
 
-Define the flask environment variables:
+Set the flask environment variables:
 
 ```bash
 export FLASK_APP="server/app:create_app()"
 export FLASK_ENV=production
 ```
-
-### **4. Run the flask application**
-
 Run the application
 
 ```bash
@@ -159,6 +157,20 @@ flask run
 ```
 
 **You can run the application via VS Code running the `RPI Electrical Panel` configuration**
+
+## **Set the rpi-electrical-panel application as a service**
+
+Copy the service file
+```bash
+sudo cp server/service/rpi-electrical-panel.service /etc/systemd/system/
+```
+
+Register service
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable rpi-electrical-panel
+sudo systemctl restart rpi-electrical-panel
+```
 
 ## **Testing scripts**
 

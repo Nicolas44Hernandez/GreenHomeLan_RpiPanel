@@ -85,7 +85,7 @@ class RelaysManager:
             if new_relay_status.relay_number in relays_current_status:
                 if new_relay_status.status != relays_current_status[new_relay_status.relay_number]:
                     relays_with_new_status.append(new_relay_status.relay_number)
-        logger.info(f"relays_with_new_status: {relays_with_new_status}")
+        logger.debug(f"relays_with_new_status: {relays_with_new_status}")
 
         # generate command
         new_status_raw_command = bin(relays_current_status_raw)[2:]
@@ -114,7 +114,7 @@ class RelaysManager:
             relay_status = True if status == "1" else False
             relays_status[i] = relay_status
 
-        logger.debug(f"Relays current status: {relays_status}")
+        logger.info(f"Relays current status: {relays_status}")
         return current_status_raw, relays_status
 
     def get_relays_current_status_instance(self):
@@ -153,9 +153,9 @@ class RelaysManager:
 
     def set_relays_statuses(self, relays_status: RelaysStatus, notify: bool = False):
         """Set relays statuses, used as callback for messages received in command relays topic"""
-        logger.debug(f"Relays command received : {relays_status}")
+        logger.info(f"Relays command received : {relays_status}")
         if relays_status.timestamp < self.last_received_command_timestamp:
-            logger.info(f"Command rejected, the timestamp is too old")
+            logger.error(f"Command rejected, the timestamp is too old")
             return None
 
         relays_new_status_serial_command = self.generate_serial_command(

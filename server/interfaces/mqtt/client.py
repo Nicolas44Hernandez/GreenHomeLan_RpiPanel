@@ -50,7 +50,7 @@ class MQTTClient:
         def on_disconnect(client, userdata, reasonCode):
             """Stop reading and notify upon disconnecting"""
 
-            logger.debug("MQTT Client disconnected")
+            logger.info("MQTT Client disconnected")
             self.connected = False
             self.loop_stop()
 
@@ -62,7 +62,7 @@ class MQTTClient:
         def on_message(client, userdata, message):
             """Notify upon message reception"""
 
-            logger.debug(f"Message received on topic {message.topic}")
+            logger.info(f"Message received on topic {message.topic}")
             logger.debug(f"   mid : {message.mid}")
             logger.debug(f"   duplicated : {message.dup}")
             logger.debug(f"   qos : {message.qos}")
@@ -112,8 +112,8 @@ class MQTTClient:
         Try to publish a message to the broker, if errorin publish launch reconnection
         """
 
-        logger.debug(f"Publish message on topic {topic}")
-        logger.debug(f"Message : {str(message)}")
+        logger.info(f"Publish message on topic {topic}")
+        logger.info(f"Message : {str(message)}")
         message_publish_info = self._client.publish(topic, serialize(message), qos)
         logger.debug("trying to publish message mid: %s", str(message_publish_info.mid))
         try:
@@ -137,7 +137,7 @@ class MQTTClient:
     def subscribe(self, topic: str, callback: Callable[[Msg], None], qos=1):
         """Subscribe to a topic"""
 
-        logger.debug(f"Subscribe to topic {topic}")
+        logger.info(f"Subscribe to topic {topic}")
         self._callbacks[topic] = callback
 
         return self._client.subscribe(topic, qos)
@@ -145,17 +145,17 @@ class MQTTClient:
     def loop_forever(self):
         """Run loop forever"""
 
-        logger.debug("Run infinite loop")
+        logger.info("Run infinite loop")
         self._client.loop_forever()
 
     def loop_start(self):
         """Run loop in dedicated thread"""
 
-        logger.debug("Start loop in dedicated thread")
+        logger.info("Start loop in dedicated thread")
         return self._client.loop_start()
 
     def loop_stop(self):
         """Stop running loop"""
 
-        logger.debug("Stop loop")
+        logger.info("Stop loop")
         return self._client.loop_stop()
