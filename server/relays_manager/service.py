@@ -38,7 +38,6 @@ class RelaysManager:
     mqtt_qos: int
     mqtt_reconnection_timeout_in_secs: int
     mqtt_publish_timeout_in_secs: int
-    last_received_command_timestamp: datetime
 
     def __init__(self, app: Flask = None) -> None:
         if app is not None:
@@ -61,9 +60,6 @@ class RelaysManager:
             self.relays_status_notification_period_in_secs = app.config[
                 "RELAYS_STATUS_NOTIFICATION_PERIOD_IN_SECS"
             ]
-
-            # Set the I2C address
-            self.last_received_command_timestamp = datetime.now()
 
             # Connect to MQTT broker
             self.init_mqtt_service()
@@ -154,9 +150,6 @@ class RelaysManager:
     def set_relays_statuses(self, relays_status: RelaysStatus, notify: bool = False):
         """Set relays statuses, used as callback for messages received in command relays topic"""
         logger.info(f"Relays command received : {relays_status}")
-        if relays_status.timestamp < self.last_received_command_timestamp:
-            logger.error(f"Command rejected, the timestamp is too old")
-            return None
 
         relays_new_status_serial_command = self.generate_serial_command(
             relays_status.relay_statuses

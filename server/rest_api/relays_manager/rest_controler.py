@@ -72,7 +72,7 @@ class WifiBandsStatusApi(MethodView):
     def get(self, relay: str):
         """Get single relay status"""
 
-        logger.info(f"GET relays/sinle/{relay}")
+        logger.info(f"GET relays/single/{relay}")
 
         # Call relays_manager_service to get relay status
         return relays_manager_service.get_single_relay_status_instance(int(relay))
