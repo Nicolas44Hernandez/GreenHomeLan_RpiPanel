@@ -162,7 +162,7 @@ flask run
 
 Copy the service file
 ```bash
-sudo cp server/service/rpi-electrical-panel.service /etc/systemd/system/
+sudo cp service/rpi-electrical-panel.service /etc/systemd/system/
 ```
 
 Register service
