@@ -10,7 +10,7 @@ OPENAPI_SWAGGER_UI_PATH: /docs
 OPENAPI_SWAGGER_UI_URL: https://cdn.jsdelivr.net/npm/swagger-ui-dist/
 
 # MQTT CONFIGURATION
-MQTT_BROKER_ADDRESS: localhost
+MQTT_BROKER_ADDRESS: 192.168.1.20
 MQTT_USERNAME: relays_manager
 MQTT_PASSWORD: lamp
 MQTT_COMMAND_RELAYS_TOPIC: command/relays
